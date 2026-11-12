@@ -1,0 +1,281 @@
+{
+ "attributes": {
+  "id": 1,
+  "method": 1001,
+  "result": {
+   "error_code": 0,
+   "hardware_version": "",
+   "hostname": "Elegoo Centauri Carbon 2",
+   "ip": "192.0.2.10",
+   "machine_model": "Centauri Carbon 2",
+   "protocol_version": "1.0.0",
+   "sn": "TESTSERIAL00001",
+   "software_version": {
+    "mcu_version": "00.00.00.00",
+    "ota_version": "01.03.01.89",
+    "soc_version": ""
+   }
+  }
+ },
+ "status": {
+  "id": 2,
+  "method": 1002,
+  "result": {
+   "error_code": 0,
+   "external_device": {
+    "camera": true,
+    "type": "0303",
+    "u_disk": true
+   },
+   "extruder": {
+    "filament_detect_enable": 1,
+    "filament_detected": 1,
+    "target": 210,
+    "temperature": 209
+   },
+   "fans": {
+    "aux_fan": {
+     "speed": 0.0
+    },
+    "box_fan": {
+     "speed": 25.5
+    },
+    "controller_fan": {
+     "speed": 255.0
+    },
+    "fan": {
+     "speed": 247.0
+    },
+    "heater_fan": {
+     "speed": 255.0
+    }
+   },
+   "gcode_move": {
+    "extruder": 38.56518000004053,
+    "speed": 15000,
+    "speed_mode": 1,
+    "x": 111.834,
+    "y": 150.615,
+    "z": 10.8
+   },
+   "heater_bed": {
+    "target": 60,
+    "temperature": 59
+   },
+   "led": {
+    "status": 1
+   },
+   "machine_status": {
+    "exception_status": [],
+    "progress": 17,
+    "status": 2,
+    "sub_status": 2075,
+    "sub_status_reason_code": 0
+   },
+   "print_status": {
+    "bed_mesh_detect": true,
+    "current_layer": 54,
+    "enable": true,
+    "filament_detect": false,
+    "filename": "ECC2_0.4_Spool adapter_Elegoo PLA _0.2_1h12m.gcode",
+    "print_duration": 727,
+    "remaining_time_sec": 3532,
+    "state": "printing",
+    "total_duration": 876,
+    "uuid": "cee5ba95-8ed1-41a6-b56d-c0efa24f8b53"
+   },
+   "tool_head": {
+    "homed_axes": "xyz"
+   },
+   "ztemperature_sensor": {
+    "measured_max_temperature": 0,
+    "measured_min_temperature": 0,
+    "temperature": 28
+   }
+  }
+ },
+ "file_list": {
+  "id": 3,
+  "method": 1044,
+  "result": {
+   "error_code": 0,
+   "file_list": [
+    {
+     "color_map": [
+      {
+       "color": "#FFFFFF",
+       "name": "PLA",
+       "t": 0
+      }
+     ],
+     "create_time": 2145799470,
+     "filename": "ECC2_0.4_The Buddha_Elegoo PLA _0.2_25m47s.gcode",
+     "last_print_time": 0,
+     "layer": 227,
+     "print_time": 1547,
+     "size": 5190855,
+     "total_filament_used": 9.83,
+     "total_print_times": 0,
+     "type": "file"
+    },
+    {
+     "color_map": [
+      {
+       "color": "#FFFFFF",
+       "name": "PLA",
+       "t": 0
+      }
+     ],
+     "create_time": 2145799410,
+     "filename": "ECC2_0.4_PTFE Tube Tool_Elegoo PLA _0.2_20m47s.gcode",
+     "last_print_time": 0,
+     "layer": 250,
+     "print_time": 1247,
+     "size": 3050042,
+     "total_filament_used": 6.1,
+     "total_print_times": 0,
+     "type": "file"
+    },
+    {
+     "color_map": [
+      {
+       "color": "#FFFFFF",
+       "name": "PLA",
+       "t": 0
+      }
+     ],
+     "create_time": 1794446304,
+     "filename": "ECC2_0.4_Spool adapter_Elegoo PLA _0.2_1h12m.gcode",
+     "last_print_time": 0,
+     "layer": 300,
+     "print_time": 4329,
+     "size": 13255776,
+     "total_filament_used": 41.04,
+     "total_print_times": 0,
+     "type": "file"
+    }
+   ],
+   "offset": 0,
+   "total": 9
+  }
+ },
+ "deltas": [
+  {
+   "id": 1261,
+   "method": 6000,
+   "result": {
+    "extruder": {
+     "temperature": 211
+    },
+    "gcode_move": {
+     "extruder": 42.59631000003628,
+     "x": 155.026,
+     "y": 149.217
+    },
+    "print_status": {
+     "print_duration": 728,
+     "remaining_time_sec": 3531,
+     "total_duration": 877
+    }
+   }
+  },
+  {
+   "id": 1262,
+   "method": 6000,
+   "result": {
+    "extruder": {
+     "temperature": 212
+    },
+    "gcode_move": {
+     "extruder": 0.3373199999996359,
+     "speed": 12000,
+     "x": 114.832,
+     "y": 92.715,
+     "z": 11.0
+    },
+    "print_status": {
+     "current_layer": 55,
+     "print_duration": 729,
+     "remaining_time_sec": 3530,
+     "total_duration": 878
+    }
+   }
+  },
+  {
+   "id": 1263,
+   "method": 6000,
+   "result": {
+    "gcode_move": {
+     "extruder": 3.3876400000071953,
+     "x": 150.512,
+     "y": 110.478
+    },
+    "heater_bed": {
+     "temperature": 60
+    },
+    "print_status": {
+     "print_duration": 730,
+     "remaining_time_sec": 3529,
+     "total_duration": 879
+    }
+   }
+  },
+  {
+   "id": 1264,
+   "method": 6000,
+   "result": {
+    "extruder": {
+     "temperature": 210
+    },
+    "gcode_move": {
+     "extruder": 6.493570000012369,
+     "x": 156.258,
+     "y": 149.236
+    },
+    "print_status": {
+     "print_duration": 731,
+     "remaining_time_sec": 3528,
+     "total_duration": 880
+    }
+   }
+  },
+  {
+   "id": 1265,
+   "method": 6000,
+   "result": {
+    "extruder": {
+     "temperature": 209
+    },
+    "gcode_move": {
+     "extruder": 9.541830000018308,
+     "x": 116.519,
+     "y": 151.636
+    },
+    "heater_bed": {
+     "temperature": 59
+    },
+    "print_status": {
+     "print_duration": 732,
+     "remaining_time_sec": 3527,
+     "total_duration": 881
+    }
+   }
+  },
+  {
+   "id": 1266,
+   "method": 6000,
+   "result": {
+    "gcode_move": {
+     "extruder": 12.645870000025752,
+     "x": 92.156,
+     "y": 121.012
+    },
+    "print_status": {
+     "print_duration": 733,
+     "remaining_time_sec": 3526,
+     "total_duration": 882
+    }
+   }
+  }
+ ]
+}

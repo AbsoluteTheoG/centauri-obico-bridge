@@ -3,3 +3,4 @@ uvicorn[standard]==0.35.0
 websockets==15.0.1
 httpx==0.28.1
 python-multipart==0.0.20
+aiomqtt==2.4.0

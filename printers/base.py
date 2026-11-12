@@ -311,17 +311,27 @@ class BasePrinter:
                 async for chunk in upstream.aiter_bytes():
                     yield chunk
 
-    async def cached_frame_stream(self, boundary: str = "--foo", fps: float = 10.0) -> AsyncIterator[bytes]:
+    async def cached_frame_stream(
+        self,
+        boundary: str = "--foo",
+        fps: float = 10.0,
+        idle_timeout: Optional[float] = None,
+    ) -> AsyncIterator[bytes]:
         """MJPEG stream re-served from :attr:`latest_frame`.
 
         Used by printers that only allow a small number of concurrent camera
         connections, so viewers share the frame reader's single upstream.
+        Ends when no new frame arrives for ``idle_timeout`` seconds.
         """
         last_ts = 0.0
         interval = 1.0 / fps
+        last_new = time.monotonic()
         while True:
+            if idle_timeout is not None and time.monotonic() - last_new > idle_timeout:
+                return
             if self.latest_frame and self.latest_frame_ts != last_ts:
                 last_ts = self.latest_frame_ts
+                last_new = time.monotonic()
                 frame = self.latest_frame
                 yield (
                     f"{boundary}\r\nContent-Type: image/jpeg\r\n"
