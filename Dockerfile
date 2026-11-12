@@ -5,6 +5,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
+COPY printers/ printers/
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 7125 8080
