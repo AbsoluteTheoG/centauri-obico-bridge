@@ -1,6 +1,7 @@
-# All-in-one stack: SDCP bridge + moonraker-obico agent.
+# All-in-one stack: Centauri bridge + moonraker-obico agent.
 #
-#   1. cp .env.example .env   (set CENTAURI_HOST and OBICO_SERVER_URL)
+#   1. cp .env.example .env   (set CENTAURI_HOST; for a Centauri Carbon 2
+#      also PRINTER_PROTOCOL=cc2 and CENTAURI_ACCESS_CODE) and OBICO_SERVER_URL
 #   2. cp config/moonraker-obico.cfg.template config/moonraker-obico.cfg
 #      (or simply run ./install.sh which does both)
 #   3. docker compose up -d --build

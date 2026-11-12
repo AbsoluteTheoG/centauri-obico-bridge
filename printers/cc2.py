@@ -52,11 +52,11 @@ def _env(name: str, default: str) -> str:
 HOST = _env("CENTAURI_HOST", "192.168.1.43")
 ACCESS_CODE = _env("CENTAURI_ACCESS_CODE", "")
 SERIAL = _env("CENTAURI_SERIAL", "").strip()
-MQTT_PORT = int(_env("CENTAURI_MQTT_PORT", "1883"))
-VIDEO_PORT = int(_env("CENTAURI_VIDEO_PORT", "8080"))
+MQTT_PORT = int(_env("CC2_MQTT_PORT", "1883"))
+VIDEO_PORT = int(_env("CC2_VIDEO_PORT", "8080"))
 STATUS_REFRESH_INTERVAL = float(_env("STATUS_REFRESH_INTERVAL", "30"))
 FILELIST_INTERVAL = float(_env("FILELIST_INTERVAL", "60"))
-RAW_LOG = _env("SDCP_RAW_LOG", "")
+RAW_LOG = _env("RAW_LOG", _env("SDCP_RAW_LOG", ""))
 # Bed levelling sent on START_PRINT.  The printer remembers the last value it
 # was given, so it is always sent explicitly.
 START_CALIBRATION = int(_env("START_CALIBRATION", "1"))

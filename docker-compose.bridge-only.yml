@@ -1,7 +1,8 @@
 # Bridge only. Use this when moonraker-obico is already running somewhere
 # else (another host, another container, a systemd service, ...).
 #
-#   1. cp .env.example .env   (set CENTAURI_HOST)
+#   1. cp .env.example .env   (set CENTAURI_HOST; for a Centauri Carbon 2
+#      also PRINTER_PROTOCOL=cc2 and CENTAURI_ACCESS_CODE)
 #   2. docker compose -f docker-compose.bridge-only.yml up -d --build
 #
 # The Moonraker-compatible API is then available on http://<host>:7125 and
