@@ -183,6 +183,7 @@ class Cc2Printer(BasePrinter):
         self.file_list_ts: float = 0.0
         self._status_seq: Optional[int] = None
         self._full_status_pending = False
+        self._file_list_pending = False
         self._next_id = 0
         self.pending: dict[int, asyncio.Future] = {}
         self._registration: Optional[asyncio.Future] = None
@@ -365,7 +366,8 @@ class Cc2Printer(BasePrinter):
                     self._full_status_pending = False
                     last_status = now
                     await self.send_command(CMD_GET_STATUS)
-                if now - last_files > FILELIST_INTERVAL:
+                if self._file_list_pending or now - last_files > FILELIST_INTERVAL:
+                    self._file_list_pending = False
                     last_files = now
                     await self.send_command(CMD_GET_FILE_LIST, {"storage_media": "local", "path": "/"})
 
@@ -495,6 +497,15 @@ class Cc2Printer(BasePrinter):
 
     def _status_changed(self) -> None:
         self._track_job()
+        if self._machine().get("status") == MACHINE_PRINTING:
+            filename = self._filename()
+            if not filename:
+                # A print started on the printer or from the slicer: the
+                # filename can arrive after the status flips to printing.
+                self._full_status_pending = True
+            elif self.file_list_ts and not self.find_file(filename):
+                # Uploaded after our last file list: refresh for its metadata.
+                self._file_list_pending = True
         with contextlib.suppress(RuntimeError):
             asyncio.get_running_loop().create_task(self._notify_if_changed())
 
@@ -520,7 +531,9 @@ class Cc2Printer(BasePrinter):
             return "complete"
         if status == MACHINE_PRINTING:
             # Includes preheating, homing and levelling before the first layer.
-            return "printing"
+            # Hold back until the filename is known: moonraker-obico registers
+            # the print with Obico once, on the transition to printing.
+            return "printing" if self._filename() else "standby"
         if status == MACHINE_EMERGENCY_STOP:
             return "error"
         state = str(self._print().get("state") or "").lower()

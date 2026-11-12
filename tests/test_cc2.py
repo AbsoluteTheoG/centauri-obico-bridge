@@ -141,7 +141,7 @@ def test_state_mapping(cc2_app, machine, sub, state_str, expected):
     bridge = cc2_app.make_bridge()
     bridge.connected = True
     bridge.status = {"machine_status": {"status": machine, "sub_status": sub},
-                     "print_status": {"state": state_str}}
+                     "print_status": {"state": state_str, "filename": FILENAME}}
     assert bridge.map_print_state() == expected
 
 
@@ -286,3 +286,38 @@ def test_cached_stream_ends_after_idle_timeout(cc2_app):
     chunks = asyncio.run(collect())
     assert len(chunks) == 1
     assert chunks[0].endswith(b"\xff\xd8jpeg\xff\xd9\r\n")
+
+
+def test_printing_is_held_until_filename_is_known(cc2_app):
+    # Print started from the slicer: status flips to printing before the
+    # printer reports the filename. moonraker-obico must not see "printing"
+    # with an empty filename, or Obico rejects the g-code file record.
+    bridge = cc2_app.make_bridge()
+    feed(bridge, [
+        _response(FIXTURE["attributes"]),
+        _response(FIXTURE["file_list"]),
+        _status({"id": 1, "method": 6000, "result": {
+            "machine_status": {"status": 2, "sub_status": 1045}}}),
+    ])
+    assert bridge.map_print_state() == "standby"
+    assert bridge.build_print_stats()["filename"] == ""
+    assert bridge._full_status_pending is True
+
+    feed(bridge, [_status({"id": 2, "method": 6000, "result": {
+        "print_status": {"filename": FILENAME}}})])
+    assert bridge.map_print_state() == "printing"
+    assert bridge.build_print_stats()["filename"] == FILENAME
+    assert bridge.build_metadata(FILENAME)["size"] == 13255776
+    assert bridge._file_list_pending is False
+
+
+def test_unknown_print_file_triggers_file_list_refresh(cc2_app):
+    bridge = cc2_app.make_bridge()
+    feed(bridge, [
+        _response(FIXTURE["file_list"]),
+        _status({"id": 1, "method": 6000, "result": {
+            "machine_status": {"status": 2, "sub_status": 1045},
+            "print_status": {"filename": "just-uploaded.gcode"}}}),
+    ])
+    assert bridge.map_print_state() == "printing"
+    assert bridge._file_list_pending is True
