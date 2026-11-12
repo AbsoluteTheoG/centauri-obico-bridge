@@ -57,8 +57,9 @@ Carbon 2 speaks its own MQTT protocol, and neither has a Moonraker server. This 
 | --- | --- | --- |
 | Live status (progress, layers, temps, position) | ✅ | ✅ |
 | Webcam MJPEG stream + JPEG snapshot | ✅ | ✅ |
-| Obico failure detection → pause | ✅ | 🧪 not yet verified on hardware |
-| Start / pause / resume / cancel | ✅ | 🧪 not yet verified on hardware |
+| Obico failure detection → pause | ✅ | ✅ (same pause command as below) |
+| Pause / resume | ✅ | ✅ |
+| Start / cancel from Obico | ✅ | 🧪 not yet verified on hardware |
 | Upload & print G-code from Obico | ✅ | ❌ (print files already on the printer) |
 | Temperature / fan gcode | ✅ | 🧪 not yet verified on hardware |
 | Home / jog gcode | ✅ | ❌ |
