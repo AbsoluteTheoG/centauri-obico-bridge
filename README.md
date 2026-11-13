@@ -64,6 +64,7 @@ Carbon 2 speaks its own MQTT protocol, and neither has a Moonraker server. This 
 | Temperature / fan gcode | ✅ | 🧪 not yet verified on hardware |
 | Home / jog gcode | ✅ | ❌ |
 | Job history / metadata | ✅ | ✅ |
+| Obico file browser (list printer files) | ✅ | ✅ |
 | Moonraker WebSocket JSON-RPC | ✅ | ✅ |
 | No firmware modification | ✅ | ✅ |
 | Fully reversible | ✅ | ✅ |

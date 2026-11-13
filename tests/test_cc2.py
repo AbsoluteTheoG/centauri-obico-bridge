@@ -321,3 +321,27 @@ def test_unknown_print_file_triggers_file_list_refresh(cc2_app):
     ])
     assert bridge.map_print_state() == "printing"
     assert bridge._file_list_pending is True
+
+
+def test_files_directory_for_obico_file_browser(cc2_app):
+    from fastapi.testclient import TestClient
+
+    bridge = printing_bridge(cc2_app)
+    cc2_app.bridge = bridge
+    client = TestClient(cc2_app.app)
+    for path in ("gcodes", "/gcodes/", ""):
+        res = client.get("/server/files/directory", params={"path": path}).json()["result"]
+        assert res["dirs"] == []
+        assert res["root_info"]["name"] == "gcodes"
+        names = [f["filename"] for f in res["files"]]
+        assert FILENAME in names
+        assert len(names) == len(bridge.file_entries())
+        mods = [f["modified"] for f in res["files"]]
+        assert mods == sorted(mods, reverse=True)
+
+    ext = client.get("/server/files/directory", params={"path": "gcodes", "extended": "true"}).json()["result"]
+    item = next(f for f in ext["files"] if f["filename"] == FILENAME)
+    assert item["size"] == 13255776 and item["layer_count"] == 300 and item["estimated_time"] == 4329
+
+    assert client.get("/server/files/directory", params={"path": "gcodes/nope"}).status_code == 404
+    assert client.get("/server/files/directory", params={"path": "config"}).status_code == 404

@@ -257,6 +257,44 @@ async def files_list():
     return result(bridge.file_entries())
 
 
+@app.get("/server/files/directory")
+async def files_directory(path: str = "gcodes", extended: bool = False):
+    """Moonraker ``server.files.get_directory``, used by Obico's file browser."""
+    rel = path.strip("/")
+    if rel == "gcodes" or rel.startswith("gcodes/"):
+        rel = rel[len("gcodes"):].strip("/")
+    elif rel:
+        return JSONResponse(status_code=404, content={"error": {"code": 404, "message": f"Invalid root: {path}"}})
+    prefix = f"{rel}/" if rel else ""
+    files: list[dict] = []
+    dirs: dict[str, dict] = {}
+    for entry in bridge.file_entries():
+        full = entry.get("path", "").strip("/")
+        if not full.startswith(prefix):
+            continue
+        name, sep, _ = full[len(prefix):].partition("/")
+        if not name:
+            continue
+        if sep:
+            d = dirs.setdefault(name, {"dirname": name, "modified": 0, "size": 0, "permissions": "rw"})
+            d["modified"] = max(d["modified"], entry.get("modified", 0) or 0)
+            continue
+        item = {"filename": name, "modified": entry.get("modified", 0),
+                "size": entry.get("size", 0), "permissions": entry.get("permissions", "rw")}
+        if extended:
+            meta = bridge.build_metadata(full)
+            item.update({k: v for k, v in meta.items() if k not in item and k != "filename"})
+        files.append(item)
+    if rel and not files and not dirs:
+        return JSONResponse(status_code=404, content={"error": {"code": 404, "message": f"Directory not found: {path}"}})
+    return result({
+        "dirs": sorted(dirs.values(), key=lambda d: d["dirname"]),
+        "files": sorted(files, key=lambda f: f["modified"] or 0, reverse=True),
+        "disk_usage": {"total": 0, "used": 0, "free": 0},
+        "root_info": {"name": "gcodes", "permissions": "rw"},
+    })
+
+
 @app.get("/server/files/metadata")
 async def files_metadata(filename: str = ""):
     # Always return a valid "result" object: moonraker-obico dereferences it
