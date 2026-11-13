@@ -239,6 +239,10 @@ Centauri Carbon 2: check that LAN Only Mode is on, that `CENTAURI_ACCESS_CODE`
 matches the code on the printer (it changes when LAN Only Mode is toggled) and
 that port 1883 is reachable. `GET /health` shows the last error.
 
+**Obico shows the printer offline after the bridge was restarted or updated.**
+moonraker-obico does not always reconnect on its own when the bridge container
+is recreated. Restart the agent: `docker restart moonraker-obico`.
+
 **Obico shows the printer offline.**
 Check `docker compose logs -f moonraker-obico`. The agent must reach the bridge
 on `127.0.0.1:7125` (it uses host networking).
