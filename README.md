@@ -1,12 +1,13 @@
 # centauri-obico-bridge
 
 **Use [Obico](https://www.obico.io/) (AI failure detection, remote control,
-webcam) with an Elegoo Centauri Carbon running its stock firmware — no
-flashing, no OpenCentauri/COSMOS, no firmware modification.**
+webcam) with an Elegoo Centauri Carbon or Centauri Carbon 2 running its stock
+firmware — no flashing, no OpenCentauri/COSMOS, no firmware modification.**
 
 This project is a small Docker container that speaks the printer's native
-**SDCP** protocol and exposes a **Moonraker-compatible API**, which is exactly
-what `moonraker-obico` expects. Everything happens on the network and in
+protocol (**SDCP** on the Centauri Carbon, **MQTT** on the Centauri Carbon 2)
+and exposes a **Moonraker-compatible API**, which is exactly what
+`moonraker-obico` expects. Everything happens on the network and in
 Docker, so it is fully reversible: stop the container and your printer is back
 to stock.
 
@@ -15,14 +16,16 @@ to stock.
 │  Elegoo Centauri Carbon      │
 │  (stock firmware)            │
 │                              │
-│  SDCP WebSocket  :3030       │
-│  MJPEG camera    :3031/video │
+│  CC:  SDCP WebSocket :3030   │
+│       MJPEG camera   :3031   │
+│  CC2: MQTT broker    :1883   │
+│       MJPEG camera   :8080   │
 └───────────────┬──────────────┘
                 │
                 ▼
 ┌──────────────────────────────┐
 │  centauri-obico-bridge       │  ← this project (port 7125)
-│  SDCP  ⇄  Moonraker API      │
+│  SDCP/MQTT ⇄ Moonraker API   │
 └───────────────┬──────────────┘
                 │  Moonraker HTTP + WebSocket JSON-RPC
                 ▼
@@ -39,8 +42,8 @@ to stock.
 ## Why
 
 Obico only talks to printers through OctoPrint or Moonraker. The Centauri
-Carbon speaks SDCP (Chitu's Smart Device Control Protocol) and has no Moonraker
-server. This bridge translates between the two so you get:
+Carbon speaks SDCP (Chitu's Smart Device Control Protocol), the Centauri
+Carbon 2 speaks its own MQTT protocol, and neither has a Moonraker server. This bridge translates between the two so you get:
 
 - AI failure detection (spaghetti detection) with automatic **pause**
 - Live webcam in the Obico app
@@ -50,21 +53,28 @@ server. This bridge translates between the two so you get:
 
 ## Features
 
-| Feature | Status |
-| --- | --- |
-| Live status (progress, layers, temps, position) | ✅ |
-| Webcam MJPEG stream + JPEG snapshot | ✅ |
-| Obico failure detection → pause | ✅ |
-| Start / pause / resume / cancel | ✅ |
-| Upload & print G-code from Obico | ✅ |
-| Job history / metadata | ✅ |
-| Moonraker WebSocket JSON-RPC | ✅ |
-| No firmware modification | ✅ |
-| Fully reversible | ✅ |
+| Feature | Centauri Carbon | Centauri Carbon 2 |
+| --- | --- | --- |
+| Live status (progress, layers, temps, position) | ✅ | ✅ |
+| Webcam MJPEG stream + JPEG snapshot | ✅ | ✅ |
+| Obico failure detection → pause | ✅ | ✅ (same pause command as below) |
+| Pause / resume | ✅ | ✅ |
+| Start / cancel from Obico | ✅ | 🧪 not yet verified on hardware |
+| Upload & print G-code from Obico | ✅ | ❌ (print files already on the printer) |
+| Temperature / fan gcode | ✅ | 🧪 not yet verified on hardware |
+| Home / jog gcode | ✅ | ❌ |
+| Job history / metadata | ✅ | ✅ |
+| Obico file browser (list printer files) | ✅ | ✅ |
+| Moonraker WebSocket JSON-RPC | ✅ | ✅ |
+| No firmware modification | ✅ | ✅ |
+| Fully reversible | ✅ | ✅ |
 
 ## Requirements
 
-- An Elegoo Centauri Carbon on your LAN with the stock firmware.
+- An Elegoo Centauri Carbon or Centauri Carbon 2 on your LAN with the stock
+  firmware. The **Centauri Carbon 2** must have **LAN Only Mode** enabled
+  (printer: *Settings → Network → LAN Only Mode*); note the **access code**
+  shown there. LAN Only Mode disables Elegoo's cloud features.
 - A host that can run Docker (Linux recommended; the agent uses host
   networking, so Docker Desktop on macOS/Windows is not supported).
 - An Obico account: [cloud](https://app.obico.io) or a
@@ -81,7 +91,8 @@ cd centauri-obico-bridge
 The script will:
 
 1. Check for Docker/Compose (and offer to install Docker if missing).
-2. Ask for your **printer IP** and your **Obico server URL**.
+2. Ask for your **printer IP**, **printer model** (and, for the Centauri
+   Carbon 2, its **access code**) and your **Obico server URL**.
 3. Generate `.env` and `config/moonraker-obico.cfg`.
 4. Build and start the bridge **and** `moonraker-obico`.
 5. Wait until the bridge is healthy.
@@ -112,6 +123,7 @@ Prefer to understand every step? See
 ```bash
 cp .env.example .env
 # edit CENTAURI_HOST (and OBICO_SERVER_URL if self-hosting)
+# Centauri Carbon 2: also set PRINTER_PROTOCOL=cc2 and CENTAURI_ACCESS_CODE
 cp config/moonraker-obico.cfg.template config/moonraker-obico.cfg
 docker compose up -d --build
 ```
@@ -128,21 +140,43 @@ All settings live in `.env` (see `.env.example`):
 
 | Variable | Default | Description |
 | --- | --- | --- |
+| `PRINTER_PROTOCOL` | `sdcp` | `sdcp` = Centauri Carbon, `cc2` = Centauri Carbon 2 |
 | `CENTAURI_HOST` | – | **Required.** Printer IP or hostname |
+| `START_CALIBRATION` | `1` | Bed levelling when a print is started from Obico (1/0) |
+| `OBICO_SERVER_URL` | `https://app.obico.io` | Used to generate the agent config |
+
+Centauri Carbon (`sdcp`) only:
+
+| Variable | Default | Description |
+| --- | --- | --- |
 | `CENTAURI_SDCP_PORT` | `3030` | SDCP WebSocket port |
 | `CENTAURI_VIDEO_PORT` | `3031` | MJPEG camera port |
-| `START_CALIBRATION` | `1` | Bed levelling on `START_PRINT` (1/0) |
-| `OBICO_SERVER_URL` | `https://app.obico.io` | Used to generate the agent config |
+
+Centauri Carbon 2 (`cc2`) only:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `CENTAURI_ACCESS_CODE` | – | **Required.** Access code from *LAN Only Mode* |
+| `CENTAURI_SERIAL` | *(auto)* | Serial number; discovered from the printer if empty |
+| `CC2_MQTT_PORT` | `1883` | Printer MQTT broker port |
+| `CC2_VIDEO_PORT` | `8080` | MJPEG camera port |
+| `STATUS_REFRESH_INTERVAL` | `30` | Seconds between full status refreshes (deltas are pushed) |
 
 Additional bridge options (advanced, set in `docker-compose.yml`):
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `POLL_INTERVAL` | `2` | Seconds between status polls |
+| `POLL_INTERVAL` | `2` | Seconds between status polls (SDCP) |
 | `BRIDGE_PUBLIC_URL` | *(auto)* | Public URL used in `/server/webcams/list` |
-| `SDCP_RAW_LOG` | – | Path to append raw SDCP traffic (JSONL) |
+| `SDCP_RAW_LOG` / `RAW_LOG` | – | Path to append raw printer traffic (JSONL) |
 
 ## How it works
+
+The printer client is chosen with `PRINTER_PROTOCOL`; the code lives in
+`printers/sdcp.py` and `printers/cc2.py`, and `app.py` serves the Moonraker API
+for either.
+
+### Centauri Carbon (SDCP)
 
 The bridge connects to `ws://<printer>:3030/websocket` and:
 
@@ -154,6 +188,27 @@ The bridge connects to `ws://<printer>:3030/websocket` and:
 - translates Moonraker print commands back into SDCP commands,
 - proxies the camera and extracts JPEG snapshots from the MJPEG stream,
 - proxies G-code uploads to the printer's HTTP upload endpoint.
+
+### Centauri Carbon 2 (MQTT)
+
+The printer runs its own MQTT broker. The bridge logs in as `elegoo` with the
+access code and:
+
+- learns the serial number from `elegoo/<sn>/api_status` (or uses
+  `CENTAURI_SERIAL`),
+- registers as a client on `elegoo/<sn>/api_register` and sends a heartbeat,
+- requests attributes (1001), full status (1002) and the file list (1044),
+  then merges the status deltas the printer pushes (event 6000), asking for a
+  full status again when a delta is missed,
+- maps `machine_status.status` / `sub_status` to Moonraker
+  `print_stats.state`,
+- sends pause (1021), resume (1023), stop (1022), start (1020), temperature
+  (1028) and fan (1030) commands,
+- enables the camera (1042) and re-serves `http://<printer>:8080/?action=stream`
+  from one upstream connection, since the printer allows few camera viewers.
+
+The CC2 protocol details come from
+[elegoo-homeassistant](https://github.com/danielcherubini/elegoo-homeassistant).
 
 ### Exposed Moonraker API (port 7125)
 
@@ -178,8 +233,15 @@ Moonraker-compatible WebSocket at `/websocket`.
 ## Troubleshooting
 
 **The bridge reports `centauri_connected: false`.**
-Check the printer IP and that ports 3030/3031 are reachable:
+Centauri Carbon: check the printer IP and that ports 3030/3031 are reachable:
 `curl http://<printer>:3031/video` should stream MJPEG.
+Centauri Carbon 2: check that LAN Only Mode is on, that `CENTAURI_ACCESS_CODE`
+matches the code on the printer (it changes when LAN Only Mode is toggled) and
+that port 1883 is reachable. `GET /health` shows the last error.
+
+**Obico shows the printer offline after the bridge was restarted or updated.**
+moonraker-obico does not always reconnect on its own when the bridge container
+is recreated. Restart the agent: `docker restart moonraker-obico`.
 
 **Obico shows the printer offline.**
 Check `docker compose logs -f moonraker-obico`. The agent must reach the bridge
@@ -198,6 +260,10 @@ The printer only accepts uploads while idle, not during a print.
 
 - SDCP is a reverse-engineered, undocumented protocol. Mappings were validated
   against firmware **V1.4.49**; other firmware versions may differ.
+- The Centauri Carbon 2 support was validated against firmware **01.03.01.89**.
+  G-code upload from Obico, homing and jogging are not supported on it yet.
+- On the Centauri Carbon 2, resume is sent without waiting for a reply: the
+  printer only acknowledges it after reheating and homing (~2 minutes).
 - Obico's failure detection **pauses** the printer; it never auto-cancels.
 - During the printer's calibration phase, pause/cancel commands are ignored by
   the firmware.

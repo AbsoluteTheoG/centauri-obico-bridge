@@ -6,14 +6,19 @@ understand or customize every part of the setup.
 ## 0. Prerequisites
 
 - Docker Engine + Docker Compose v2 (`docker compose version`).
-- Your Centauri Carbon on the LAN, stock firmware.
+- Your Centauri Carbon or Centauri Carbon 2 on the LAN, stock firmware.
+  For the Centauri Carbon 2, enable **LAN Only Mode** (Settings → Network →
+  LAN Only Mode) and note the access code shown there.
 - Its IP address (find it in the printer's network screen).
 - An Obico account (cloud) or a self-hosted Obico server.
 
 Quick sanity check that the printer is reachable:
 
 ```bash
+# Centauri Carbon
 curl -m 3 http://192.168.1.50:3031/video   # should stream MJPEG bytes
+# Centauri Carbon 2 (LAN Only Mode on): the MQTT port must be open
+nc -zv 192.168.1.50 1883
 ```
 
 ## 1. Get the code
@@ -32,11 +37,22 @@ cp .env.example .env
 Edit `.env`:
 
 ```ini
+PRINTER_PROTOCOL=sdcp               # Centauri Carbon
 CENTAURI_HOST=192.168.1.50          # <-- your printer IP
 CENTAURI_SDCP_PORT=3030
 CENTAURI_VIDEO_PORT=3031
 START_CALIBRATION=1
 OBICO_SERVER_URL=https://app.obico.io   # or http://<your-server>:3334
+```
+
+For a Centauri Carbon 2:
+
+```ini
+PRINTER_PROTOCOL=cc2
+CENTAURI_HOST=192.168.1.50          # <-- your printer IP
+CENTAURI_ACCESS_CODE=123456         # <-- from LAN Only Mode on the printer
+START_CALIBRATION=1
+OBICO_SERVER_URL=https://app.obico.io
 ```
 
 ## 3. Configure moonraker-obico
